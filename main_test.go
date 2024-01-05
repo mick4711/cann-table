@@ -3,36 +3,38 @@ package main
 import (
 	"log"
 	"os"
+	"reflect"
 	"testing"
 )
 
 func TestGenerateCann(t *testing.T) {
-	standings, err := os.ReadFile("standings.json")
+	standings, err := os.ReadFile("standings_test.json")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
+	cannTable := CannTable{map[int][]string{
+		45: {"Liverpool"}, 42: {"Aston Villa"}, 40: {"Man City", "Arsenal"},
+		39: {"Tottenham"}, 44: {}, 43: {}, 41: {},
+	}, 45, 39}
+
 	var tests = []struct {
 		input []byte
-		want  []string
+		want  CannTable
 	}{
-		{standings, []string{"1"}},
+		{standings, cannTable},
 	}
 
 	for _, test := range tests {
 		got := generateCann(test.input)
-		for i, elem := range got {
-			if elem != test.want[i] {
-				t.Errorf("generateCann(%v), got:%v, want:%v", string(test.input), elem, test.want[i])
-			}
+		if !reflect.DeepEqual(got.Table, test.want.Table) {
+			t.Errorf("generateCann(%v) Table, got:%v, want:%v", string(test.input), got.Table, test.want.Table)
 		}
-		// if reflect.DeepEqual(got, test.want) {
-		// 	t.Errorf("generateCann(%v), got:%v, want:%v", string(test.input), got, test.want)
-		// }
+		if got.MaxPoints != test.want.MaxPoints {
+			t.Errorf("generateCann(%v) MaxPoints, got:%v, want:%v", string(test.input), got.MaxPoints, test.want.MaxPoints)
+		}
+		if got.MinPoints != test.want.MinPoints {
+			t.Errorf("generateCann(%v) MinPoints, got:%v, want:%v", string(test.input), got.MinPoints, test.want.MinPoints)
+		}
 	}
 }
-
-/*
-want from test standings
-map[9:[Sheffield Utd] 10:[] 11:[Burnley] 12:[] 13:[] 14:[] 15:[Luton Town] 16:[Everton] 17:[] 18:[] 19:[Brentford] 20:[Nottingham] 21:[Crystal Palace] 22:[] 23:[] 24:[Fulham] 25:[Bournemouth] 26:[] 27:[] 28:[Chelsea Wolverhampton] 29:[Newcastle] 30:[] 31:[Brighton Hove Man United] 32:[] 33:[] 34:[West Ham] 35:[] 36:[] 37:[] 38:[] 39:[Tottenham] 40:[Man City Arsenal] 41:[] 42:[Aston Villa] 43:[] 44:[] 45:[Liverpool]]
-*/

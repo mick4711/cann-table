@@ -1,0 +1,103 @@
+{
+    "standings": [
+        {
+            "table": [
+                {
+                    "position": 1,
+                    "team": {
+                        "id": 64,
+                        "name": "Liverpool FC",
+                        "shortName": "Liverpool",
+                        "tla": "LIV",
+                        "crest": "https://crests.football-data.org/64.png"
+                    },
+                    "playedGames": 20,
+                    "form": null,
+                    "won": 13,
+                    "draw": 6,
+                    "lost": 1,
+                    "points": 45,
+                    "goalsFor": 43,
+                    "goalsAgainst": 18,
+                    "goalDifference": 25
+                },
+                {
+                    "position": 2,
+                    "team": {
+                        "id": 58,
+                        "name": "Aston Villa FC",
+                        "shortName": "Aston Villa",
+                        "tla": "AVL",
+                        "crest": "https://crests.football-data.org/58.png"
+                    },
+                    "playedGames": 20,
+                    "form": null,
+                    "won": 13,
+                    "draw": 3,
+                    "lost": 4,
+                    "points": 42,
+                    "goalsFor": 43,
+                    "goalsAgainst": 27,
+                    "goalDifference": 16
+                },
+                {
+                    "position": 3,
+                    "team": {
+                        "id": 65,
+                        "name": "Manchester City FC",
+                        "shortName": "Man City",
+                        "tla": "MCI",
+                        "crest": "https://crests.football-data.org/65.png"
+                    },
+                    "playedGames": 19,
+                    "form": null,
+                    "won": 12,
+                    "draw": 4,
+                    "lost": 3,
+                    "points": 40,
+                    "goalsFor": 45,
+                    "goalsAgainst": 21,
+                    "goalDifference": 24
+                },
+                {
+                    "position": 4,
+                    "team": {
+                        "id": 57,
+                        "name": "Arsenal FC",
+                        "shortName": "Arsenal",
+                        "tla": "ARS",
+                        "crest": "https://crests.football-data.org/57.png"
+                    },
+                    "playedGames": 20,
+                    "form": null,
+                    "won": 12,
+                    "draw": 4,
+                    "lost": 4,
+                    "points": 40,
+                    "goalsFor": 37,
+                    "goalsAgainst": 20,
+                    "goalDifference": 17
+                },
+                {
+                    "position": 5,
+                    "team": {
+                        "id": 73,
+                        "name": "Tottenham Hotspur FC",
+                        "shortName": "Tottenham",
+                        "tla": "TOT",
+                        "crest": "https://crests.football-data.org/73.svg"
+                    },
+                    "playedGames": 20,
+                    "form": null,
+                    "won": 12,
+                    "draw": 3,
+                    "lost": 5,
+                    "points": 39,
+                    "goalsFor": 42,
+                    "goalsAgainst": 29,
+                    "goalDifference": 13
+                }
+            ]
+        }
+    ]
+}
