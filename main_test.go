@@ -31,3 +31,8 @@ func TestGenerateCann(t *testing.T) {
 		// }
 	}
 }
+
+/*
+want from test standings
+map[9:[Sheffield Utd] 10:[] 11:[Burnley] 12:[] 13:[] 14:[] 15:[Luton Town] 16:[Everton] 17:[] 18:[] 19:[Brentford] 20:[Nottingham] 21:[Crystal Palace] 22:[] 23:[] 24:[Fulham] 25:[Bournemouth] 26:[] 27:[] 28:[Chelsea Wolverhampton] 29:[Newcastle] 30:[] 31:[Brighton Hove Man United] 32:[] 33:[] 34:[West Ham] 35:[] 36:[] 37:[] 38:[] 39:[Tottenham] 40:[Man City Arsenal] 41:[] 42:[Aston Villa] 43:[] 44:[] 45:[Liverpool]]
+*/
