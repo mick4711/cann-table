@@ -31,6 +31,7 @@ type Row struct {
 	Position int  `json:"position"`
 	Played   int  `json:"playedGames"`
 	Points   int  `json:"points"`
+	GoalDiff int  `json:"goalDifference"`
 }
 
 // A Standings contains a table of Rows, i.e. teams and points.
@@ -103,10 +104,12 @@ func generateCann(standings []byte) CannTable {
 		cannTable[i] = []string{}
 	}
 
-	// loop thru standard table and assign team names to their point values in the Cann table
+	// loop thru standard table and assign team names and details to their point values in the Cann table
+	const rowFormat = "(%d)%s(pl:%d, gd:%d)"
 	for _, row := range standingsTable {
 		points := row.Points
-		cannTable[points] = append(cannTable[points], row.Team.ShortName)
+		rowData := fmt.Sprintf(rowFormat, row.Position, row.Team.ShortName, row.Played, row.GoalDiff)
+		cannTable[points] = append(cannTable[points], rowData)
 	}
 
 	return CannTable{cannTable, maxPoints, minPoints}
