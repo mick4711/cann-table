@@ -14,10 +14,10 @@ func TestGenerateCann(t *testing.T) {
 	}
 
 	cannTable := CannTable{map[int][]string{
-		45: {"(1)Liverpool(pl:20, gd:25)"}, 
-		42: {"(2)Aston Villa(pl:20, gd:16)"}, 
-		40: {"(3)Man City(pl:19, gd:24)", "(4)Arsenal(pl:20, gd:17)"},
-		39: {"(5)Tottenham(pl:20, gd:13)"}, 
+		45: {"[1]Liverpool(20, -25)"}, 
+		42: {"[2]Aston Villa(20, +16)"}, 
+		40: {"[3]Man City(19, +24)", "[4]Arsenal(20, +17)"},
+		39: {"[5]Tottenham(20, +13)"}, 
 		44: {}, 
 		43: {}, 
 		41: {},

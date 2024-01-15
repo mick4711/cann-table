@@ -105,7 +105,7 @@ func generateCann(standings []byte) CannTable {
 	}
 
 	// loop thru standard table and assign team names and details to their point values in the Cann table
-	const rowFormat = "(%d)%s(pl:%d, gd:%d)"
+	const rowFormat = "[%d]%s(%d, %+d)"
 	for _, row := range standingsTable {
 		points := row.Points
 		rowData := fmt.Sprintf(rowFormat, row.Position, row.Team.ShortName, row.Played, row.GoalDiff)
