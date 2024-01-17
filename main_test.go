@@ -13,7 +13,7 @@ func TestGenerateCann(t *testing.T) {
 		log.Fatalln(err)
 	}
 
-	cannTable := CannTable{map[int][]string{
+	cannTable := CannTable{map[Points][]string{
 		45: {"[1]Liverpool(20, -25)"}, 
 		42: {"[2]Aston Villa(20, +16)"}, 
 		40: {"[3]Man City(19, +24)", "[4]Arsenal(20, +17)"},

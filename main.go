@@ -12,11 +12,13 @@ import (
 	"os"
 )
 
+type Points int
+
 // A CannTable contains the table along with max and min points.
 type CannTable struct {
-	Table     map[int][]string
-	MaxPoints int
-	MinPoints int
+	Table     map[Points][]string
+	MaxPoints Points
+	MinPoints Points
 }
 
 // A Team contains details for a team.
@@ -27,11 +29,11 @@ type Team struct {
 
 // A Row contains details for a standings table row.
 type Row struct {
-	Team     Team `json:"team"`
-	Position int  `json:"position"`
-	Played   int  `json:"playedGames"`
-	Points   int  `json:"points"`
-	GoalDiff int  `json:"goalDifference"`
+	Team     Team   `json:"team"`
+	Position int    `json:"position"`
+	Played   int    `json:"playedGames"`
+	Points   Points `json:"points"`
+	GoalDiff int    `json:"goalDifference"`
 }
 
 // A Standings contains a table of Rows, i.e. teams and points.
@@ -95,11 +97,11 @@ func generateCann(standings []byte) CannTable {
 		log.Fatalln("error unmarshalling json from response standings:", err)
 	}
 	standingsTable := dataResponse.Standings[0].Table
-	maxPoints := standingsTable[0].Points
-	minPoints := standingsTable[len(standingsTable)-1].Points
+	maxPoints := Points(standingsTable[0].Points)
+	minPoints := Points(standingsTable[len(standingsTable)-1].Points)
 
 	// generate an empty Cann table with the correct number of empty rows with points values as keys
-	cannTable := make(map[int][]string)
+	cannTable := make(map[Points][]string)
 	for i := maxPoints; i >= minPoints; i-- {
 		cannTable[i] = []string{}
 	}
