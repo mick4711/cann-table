@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cann Table</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <th>Points</th>
+            <th>[Position]Team(Played, Goal Diff)</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{ .Points }}</td>
+            <td>{{ .Teams }}</td>
+        </tr>
+        {{end}}
+    </table>
+</body>
+
+</html>

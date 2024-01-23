@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +14,12 @@ import (
 )
 
 type Points int
+
+// A CannRow contains the points and teams with those points
+type CannRow struct {
+	Points Points
+	Teams  string
+}
 
 // A CannTable contains the table along with max and min points.
 type CannTable struct {
@@ -100,6 +107,7 @@ func generateCann(standings []byte) CannTable {
 	maxPoints := Points(standingsTable[0].Points)
 	minPoints := Points(standingsTable[len(standingsTable)-1].Points)
 
+	// TODO refactor to populate slice of CannRows directly
 	// generate an empty Cann table with the correct number of empty rows with points values as keys
 	cannTable := make(map[Points][]string)
 	for i := maxPoints; i >= minPoints; i-- {
@@ -117,13 +125,33 @@ func generateCann(standings []byte) CannTable {
 	return CannTable{cannTable, maxPoints, minPoints}
 }
 
-// temporary output display // TODO generate html output
+// generate output display
 func setOutput(cannTable CannTable) {
+	// create slice of Cann rows
+	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
+	tbl := make([]CannRow, 0, rowsCount)
+
+	// fill the slice of Cann rows in descending sorted order
 	for i := cannTable.MaxPoints; i >= cannTable.MinPoints; i-- {
 		teams := ""
 		for _, team := range cannTable.Table[i] {
 			teams += fmt.Sprintf(" - %v", team)
 		}
-		fmt.Printf("%02d %v\n", i, teams)
+		tbl = append(tbl, CannRow{Points: i, Teams: teams})
+	}
+
+	createHTML(tbl)
+}
+
+// generate html output
+func createHTML(cannRows []CannRow) {
+	templ, err := os.ReadFile("CannTemplate.html")
+	if err != nil {
+		log.Fatalln("error reading CannTemplate.html:", err)
+	}
+
+	cannTemplate := template.Must(template.New("cannTemplate").Parse(string(templ)))
+	if err := cannTemplate.Execute(os.Stdout, cannRows); err != nil {
+		log.Fatal(err)
 	}
 }
