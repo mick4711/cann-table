@@ -57,8 +57,8 @@ type DataResponse struct {
 func main() {
 	http.HandleFunc("/cann", cannHandler)
 
-	log.Println("Listening on port 80")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Println("Listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 // fetches the standard table standings, generates and outputs the Cann table
