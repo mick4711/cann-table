@@ -53,11 +53,20 @@ type DataResponse struct {
 	Standings []Standings `json:"standings"`
 }
 
-// main entry point - fetches the standard table standings, generates and outputs the Cann table
+// main entry point - http server
 func main() {
+	http.HandleFunc("/cann", cannHandler)
+
+	log.Println("Listening on port 80")
+	log.Fatal(http.ListenAndServe(":80", nil))
+}
+
+// fetches the standard table standings, generates and outputs the Cann table
+func cannHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request on /cann")
 	standings := getStandings()
 	canntable := generateCann(standings)
-	setOutput(canntable)
+	setOutput(w, canntable)
 }
 
 // fetch standard table standings
@@ -126,7 +135,7 @@ func generateCann(standings []byte) CannTable {
 }
 
 // generate output display
-func setOutput(cannTable CannTable) {
+func setOutput(w http.ResponseWriter, cannTable CannTable) {
 	// create slice of Cann rows
 	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
 	tbl := make([]CannRow, 0, rowsCount)
@@ -140,18 +149,9 @@ func setOutput(cannTable CannTable) {
 		tbl = append(tbl, CannRow{Points: i, Teams: teams})
 	}
 
-	createHTML(tbl)
-}
-
-// generate html output
-func createHTML(cannRows []CannRow) {
-	templ, err := os.ReadFile("CannTemplate.html")
-	if err != nil {
-		log.Fatalln("error reading CannTemplate.html:", err)
-	}
-
-	cannTemplate := template.Must(template.New("cannTemplate").Parse(string(templ)))
-	if err := cannTemplate.Execute(os.Stdout, cannRows); err != nil {
+	// generate html output
+	cannTemplate := template.Must(template.ParseFiles("CannTemplate.html"))
+	if err := cannTemplate.Execute(w, tbl); err != nil {
 		log.Fatal(err)
 	}
 }
