@@ -55,10 +55,59 @@ type DataResponse struct {
 
 // main entry point - http server
 func main() {
+	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/cann", cannHandler)
+	http.HandleFunc("/huxley", huxleyHandler)
+	http.HandleFunc("/fpl", fplHandler)
 
 	log.Println("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// displays landing page with links to other pages
+func homeHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request on /")
+
+	// generate html output
+	homeTemplate := template.Must(template.ParseFiles("HomeTemplate.html"))
+	if err := homeTemplate.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// displays Huxley's personal details
+func huxleyHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request on /huxley")
+
+	// generate html output
+	huxleyTemplate := template.Must(template.ParseFiles("HuxleyTemplate.html"))
+	if err := huxleyTemplate.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// displays FPL league table
+func fplHandler(w http.ResponseWriter, req *http.Request) {
+	log.Println("Request on /fpl")
+
+	type LeagueResponse struct { // response with array of manager entries
+		Gameweek  int            `json:"gameweek"`
+		Timestamp string         `json:"timestamp"`
+	}
+	
+	leagueResponse := LeagueResponse {1, "Under construction"}
+	
+	// convert response to json
+	w.Header().Set("Content-Type", "application/json")
+	response, err := json.MarshalIndent(leagueResponse, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%+v\n", err)
+		return
+	}
+
+	// display results
+	fmt.Fprintf(w, "%+v\n", string(response))
 }
 
 // fetches the standard table standings, generates and outputs the Cann table
