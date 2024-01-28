@@ -65,8 +65,18 @@ func main() {
 }
 
 // displays landing page with links to other pages
+func logRequest(req *http.Request) {
+	log.Println("RemoteAddr:", req.RemoteAddr)
+	log.Println("User-Agent:", req.Header["User-Agent"])
+	log.Println("Sec-Ch-Ua-Platform:", req.Header["Sec-Ch-Ua-Platform"])
+	log.Println("Sec-Ch-Ua:", req.Header["Sec-Ch-Ua"])
+
+}
+
+// displays landing page with links to other pages
 func homeHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request on /")
+	logRequest(req)
 
 	// generate html output
 	homeTemplate := template.Must(template.ParseFiles("HomeTemplate.html"))
@@ -78,6 +88,7 @@ func homeHandler(w http.ResponseWriter, req *http.Request) {
 // displays Huxley's personal details
 func huxleyHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request on /huxley")
+	logRequest(req)
 
 	// generate html output
 	huxleyTemplate := template.Must(template.ParseFiles("HuxleyTemplate.html"))
@@ -89,6 +100,7 @@ func huxleyHandler(w http.ResponseWriter, req *http.Request) {
 // displays FPL league table
 func fplHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request on /fpl")
+	logRequest(req)
 
 	type LeagueResponse struct { // response with array of manager entries
 		Gameweek  int            `json:"gameweek"`
@@ -96,7 +108,7 @@ func fplHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	
 	leagueResponse := LeagueResponse {1, "Under construction"}
-	
+
 	// convert response to json
 	w.Header().Set("Content-Type", "application/json")
 	response, err := json.MarshalIndent(leagueResponse, "", "  ")
@@ -113,6 +125,8 @@ func fplHandler(w http.ResponseWriter, req *http.Request) {
 // fetches the standard table standings, generates and outputs the Cann table
 func cannHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request on /cann")
+	logRequest(req)
+
 	standings := getStandings()
 	canntable := generateCann(standings)
 	setOutput(w, canntable)
