@@ -66,8 +66,8 @@ func main() {
 
 // displays landing page with links to other pages
 func logRequest(req *http.Request) {
-	log.Println("RemoteAddr:", req.RemoteAddr)
-	log.Println("User-Agent:", req.Header["User-Agent"])
+	// log.Println("RemoteAddr:", req.RemoteAddr)
+	// log.Println("User-Agent:", req.Header["User-Agent"])
 	log.Println("Sec-Ch-Ua-Platform:", req.Header["Sec-Ch-Ua-Platform"])
 	log.Println("Sec-Ch-Ua:", req.Header["Sec-Ch-Ua"])
 
