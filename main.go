@@ -67,7 +67,6 @@ func main() {
 // log request details
 func logRequest(req *http.Request) {
 	log.Println("User-Agent:", req.Header["User-Agent"])
-	log.Println("Host:", req.Header["Host"])
 	log.Println("Cf-Ipcountry:", req.Header["Cf-Ipcountry"])
 	log.Println("Cf-Connecting-Ip:", req.Header["Cf-Connecting-Ip"])
 	log.Println("Sec-Ch-Ua-Platform:", req.Header["Sec-Ch-Ua-Platform"])
