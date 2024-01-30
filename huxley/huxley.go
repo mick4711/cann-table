@@ -2,13 +2,11 @@
 package huxley
 
 import (
-	"fmt"
+	"html/template"
 	"log"
 	"math"
-	"time"
-
-	"html/template"
 	"net/http"
+	"time"
 )
 
 var templ = template.Must(template.New("webpage").Parse(`
@@ -21,9 +19,9 @@ var templ = template.Must(template.New("webpage").Parse(`
 			h1 {color:blue;}
 		</style>
 	</head>
-	<body>
-		<h1>{{.Name}} Age</h1>
-		<h3>Date: {{.DateOfInterest}}</h3>
+	<body style="font-size: xxx-large;">
+		<h1>{{.Name}}'s Age</h1>
+		<h3>{{.DateOfInterest}}</h3>
 		<ul>
 			<li>Breed: {{.Breed}}</li>
 			<li>Born: {{.DateOfBirth}}</li>
@@ -52,11 +50,23 @@ type Age struct {
 	Months         float64
 }
 
-// write http to http.ResponseWriter, this is like a main() function
-func DogStats(w http.ResponseWriter, r *http.Request) {
+const (
+	hoursInDay   = 24
+	daysInWeek   = 7
+	weeksInMonth = 4
+	monthsInYear = 12
+)
 
+// write http to http.ResponseWriter, this is like a main() function
+func DogStats(w http.ResponseWriter, _ *http.Request) {
 	dob := time.Date(2022, 7, 28, 12, 0, 0, 0, time.Local)
-	age := getAge(dob, time.Now())
+
+	loc, err := time.LoadLocation("Europe/Dublin")
+	if err != nil {
+		loc = time.UTC
+	}
+
+	age := getAge(dob, time.Now().In(loc))
 
 	result := DogStat{
 		Name:           "Huxley",
@@ -75,25 +85,26 @@ func DogStats(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO work on edge cases
-func getAge(dob time.Time, doi time.Time) Age {
+func getAge(dob, doi time.Time) Age {
 	y, m, d := doi.Date()
 
-	ageDays := doi.Sub(dob).Hours() / 24
-	ageWeeks := ageDays / 7
+	ageDays := doi.Sub(dob).Hours() / hoursInDay
+	ageWeeks := ageDays / daysInWeek
 	ageYears := y - dob.Year()
-
-	ageMonths := float64(int(m) - int(dob.Month()) + ageYears*12)
+	ageMonths := float64(int(m) - int(dob.Month()) + ageYears*monthsInYear)
 	monthDays := d
+
 	if d < dob.Day() {
 		ageMonths--
 	} else {
 		monthDays -= d
 	}
-	monthFraction := (math.Round(float64(monthDays) / 7)) / 4
+
+	monthFraction := (math.Round(float64(monthDays) / daysInWeek)) / weeksInMonth
 	ageMonths += monthFraction
 
 	return Age{
-		DateOfInterest: fmt.Sprint(doi.Format("Mon 02-Jan-2006")), //
+		DateOfInterest: doi.Format("Mon 02-Jan-2006 15:04:05"), //
 		Days:           int(math.Round(ageDays)),
 		Weeks:          int(math.Round(ageWeeks)),
 		Months:         ageMonths,

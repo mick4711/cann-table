@@ -6,8 +6,7 @@ import (
 )
 
 // TODO add edge case tests
-func TestGetAge(t *testing.T) {
-
+func TestGetData(t *testing.T) {
 	// ARRANGE ///////////////////////////////////////////////////////////////////////////////////
 	tests := []struct {
 		scenario    string
@@ -46,7 +45,6 @@ func TestGetAge(t *testing.T) {
 				test.expectedAge.Days, test.expectedAge.Weeks, test.expectedAge.Months)
 		}
 	}
-
 }
 
 func areSameAge(calcAge, expectedAge Age) bool {
@@ -55,5 +53,6 @@ func areSameAge(calcAge, expectedAge Age) bool {
 		calcAge.Weeks == expectedAge.Weeks {
 		return true
 	}
+
 	return false
 }
