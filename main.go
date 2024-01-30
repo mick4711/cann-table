@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"github.com/mick4711/moh/huxley"
+	"github.com/mick4711/moh/fpl"
 )
 
 type Points int
@@ -100,24 +101,8 @@ func fplHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request on /fpl")
 	logRequest(req)
 
-	type LeagueResponse struct { // response with array of manager entries
-		Gameweek  int            `json:"gameweek"`
-		Timestamp string         `json:"timestamp"`
-	}
-	
-	leagueResponse := LeagueResponse {1, "Under construction"}
-
-	// convert response to json
-	w.Header().Set("Content-Type", "application/json")
-	response, err := json.MarshalIndent(leagueResponse, "", "  ")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "%+v\n", err)
-		return
-	}
-
-	// display results
-	fmt.Fprintf(w, "%+v\n", string(response))
+	// get json for consumption by vercel app
+	fpl.FplPoints(w, req)
 }
 
 // fetches the standard table standings, generates and outputs the Cann table
