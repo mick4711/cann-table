@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github.com/mick4711/moh/huxley"
 )
 
 type Points int
@@ -91,10 +92,7 @@ func huxleyHandler(w http.ResponseWriter, req *http.Request) {
 	logRequest(req)
 
 	// generate html output
-	huxleyTemplate := template.Must(template.ParseFiles("HuxleyTemplate.html"))
-	if err := huxleyTemplate.Execute(w, nil); err != nil {
-		log.Fatal(err)
-	}
+	huxley.DogStats(w , req)
 }
 
 // displays FPL league table
