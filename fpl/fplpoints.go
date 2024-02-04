@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -65,8 +66,10 @@ func FplPoints(w http.ResponseWriter, r *http.Request) {
 
 	managers, ok := os.LookupEnv("managers")
 	if !ok {
+		errMsg := "Environment variable -managers- can not be read"
+		log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "LookupEnv managers not ok")
+		fmt.Fprint(w, errMsg)
 		return
 	}
 

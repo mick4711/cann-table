@@ -55,24 +55,32 @@ type DataResponse struct {
 
 // fetches the standard table standings, generates and outputs the Cann table
 func GenerateTable(w http.ResponseWriter, req *http.Request) {
-	standings := getStandings()
+	standings, err := getStandings(w)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to read current league standings %s", err)
+		log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, errMsg)
+		return
+		
+	}
 	canntable := generateCann(standings)
 	setOutput(w, canntable)
 }
 
 // fetch standard table standings
-func getStandings() []byte {
+func getStandings(w http.ResponseWriter) ([]byte, error) {
 	//configure request
 	url := `http://api.football-data.org/v4/competitions/PL/standings`
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatalln("error getting standings:", err)
+		return nil, fmt.Errorf("create standings request failure: %w", err)
 	}
 
 	// add API token to header
-	apiToken := os.Getenv("API_TOKEN")
-	if len(apiToken) == 0 {
-		log.Fatalln("API_TOKEN env var not set")
+	apiToken, ok := os.LookupEnv("API_TOKEN")
+	if !ok {
+		return nil, fmt.Errorf("environment variable -API_TOKEN- can not be read")
 	}
 	req.Header.Add("X-Auth-Token", apiToken)
 
@@ -80,20 +88,20 @@ func getStandings() []byte {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln("error getting standings:", err)
+		return nil, fmt.Errorf("response failure: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalln("error getting standings, status not OK:", resp.StatusCode)
+		return nil, fmt.Errorf("response status not OK: %v", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln("error getting standings, cannot read response:", err)
+		return nil, fmt.Errorf("cannot read response: %w", err)
 	}
 
-	return body
+	return body, nil
 }
 
 // generate Cann table from standard standings table

@@ -24,6 +24,10 @@ func main() {
 
 // log request details
 func logRequest(req *http.Request) {
+	if req.RequestURI == "/favicon.ico" {
+		return
+	}
+	log.Printf("\n============ route = [%s]  ===================\n", req.RequestURI)
 	log.Println("User-Agent:", req.Header["User-Agent"])
 	log.Println("Cf-Ipcountry:", req.Header["Cf-Ipcountry"])
 	log.Println("Cf-Connecting-Ip:", req.Header["Cf-Connecting-Ip"])
@@ -33,7 +37,6 @@ func logRequest(req *http.Request) {
 
 // displays landing page with links to other pages
 func homeHandler(w http.ResponseWriter, req *http.Request) {
-	log.Println("Request on /")
 	logRequest(req)
 
 	// generate html output
@@ -45,7 +48,6 @@ func homeHandler(w http.ResponseWriter, req *http.Request) {
 
 // displays Huxley's personal details
 func huxleyHandler(w http.ResponseWriter, req *http.Request) {
-	log.Println("Request on /huxley")
 	logRequest(req)
 
 	// generate html output
@@ -54,7 +56,6 @@ func huxleyHandler(w http.ResponseWriter, req *http.Request) {
 
 // displays FPL league table
 func fplHandler(w http.ResponseWriter, req *http.Request) {
-	log.Println("Request on /fpl")
 	logRequest(req)
 
 	// get json for consumption by vercel app
@@ -63,7 +64,6 @@ func fplHandler(w http.ResponseWriter, req *http.Request) {
 
 // fetches the standard table standings, generates and outputs the Cann table
 func cannHandler(w http.ResponseWriter, req *http.Request) {
-	log.Println("Request on /cann")
 	logRequest(req)
 
 	cann.GenerateTable(w, req)
