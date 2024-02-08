@@ -23,7 +23,7 @@ func TestGenerateCann(t *testing.T) {
 		41: {},
 	}, 45, 39}
 
-	var tests = []struct {
+	tests := []struct {
 		input []byte
 		want  Table
 	}{

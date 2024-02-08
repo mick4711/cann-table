@@ -12,11 +12,16 @@ import (
 	"github.com/mick4711/moh/huxley"
 )
 
+const (
+	ServerReadTimeout  = 5 * time.Second
+	ServerWriteTimeout = 10 * time.Second
+)
+
 // main entry point - http server
 func main() {
 	srv := &http.Server{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  ServerReadTimeout,
+		WriteTimeout: ServerWriteTimeout,
 		Addr:         ":8080",
 	}
 
