@@ -58,7 +58,6 @@ func TestGetData(t *testing.T) {
 
 	// ACT //////////////////////////////////////////////////////////////////////////////////////////////
 	testResponse, err := getData("1, 2")
-
 	// ASSERT ///////////////////////////////////////////////////////////////////////////////////////////
 	// check err
 	if err != nil {
@@ -177,7 +176,6 @@ func TestFpl404(t *testing.T) {
 
 	// ACT //////////////////////////////////////////////////////////////////////////////////////////////
 	testResponse, err := getData("1, 2")
-
 	// ASSERT ///////////////////////////////////////////////////////////////////////////////////////////
 	// check err
 	if err != nil {
@@ -196,7 +194,7 @@ func TestFpl404(t *testing.T) {
 
 func TestFpl5XX(t *testing.T) {
 	// httptest server to serve up mock json response
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set(ContentType, ApplicationJSON)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
