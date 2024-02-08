@@ -27,6 +27,7 @@ func logRequest(req *http.Request) {
 	if req.RequestURI == "/favicon.ico" {
 		return
 	}
+
 	log.Printf("\n============ route = [%s]  ===================\n", req.RequestURI)
 	log.Println("User-Agent:", req.Header["User-Agent"])
 	log.Println("Cf-Ipcountry:", req.Header["Cf-Ipcountry"])
@@ -59,7 +60,7 @@ func fplHandler(w http.ResponseWriter, req *http.Request) {
 	logRequest(req)
 
 	// get json for consumption by vercel app
-	fpl.FplPoints(w, req)
+	fpl.Points(w, req)
 }
 
 // fetches the standard table standings, generates and outputs the Cann table

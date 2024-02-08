@@ -12,14 +12,15 @@ import (
 // TEST DATA ///////////////////////////////////////////////////////////////////////////////////
 // const Gameweek = 99
 // const ContentType = "Content-Type"
-// const ApplicationJson = "application/json"
+// const ApplicationJSON = "application/json"
 const (
-	Gameweek        = 99
-	ContentType     = "Content-Type"
-	ApplicationJson = "application/json"
+	Gameweek         = 99
+	ContentType      = "Content-Type"
+	ApplicationJSON  = "application/json"
+	EntryPlaceholder = "/%v"
 )
 
-var mockFplResponse = []FplResponse{
+var mockFplResponse = []Response{
 	{
 		CurrentEvent:         Gameweek,
 		ID:                   1,
@@ -53,7 +54,7 @@ func TestGetData(t *testing.T) {
 	defer ts.Close()
 
 	// overwrite fplURL to use httptest URL
-	fplURL = ts.URL + "/%v"
+	fplURL = ts.URL + EntryPlaceholder
 
 	// ACT //////////////////////////////////////////////////////////////////////////////////////////////
 	testResponse, err := getData("1, 2")
@@ -75,11 +76,12 @@ func TestGetData(t *testing.T) {
 	}
 
 	// correct values for each league entry
-	checkValidResponse(testResponse, expectedManagersResponse, t)
+	checkValidResponse(t, testResponse, expectedManagersResponse)
 }
 
 func setExpectedManagersResponse() []ManagerEntry {
 	var expectedManagersResponse []ManagerEntry
+
 	for _, fplResponse := range mockFplResponse {
 		managerEntry := ManagerEntry{
 			ID:       fplResponse.ID,
@@ -93,31 +95,36 @@ func setExpectedManagersResponse() []ManagerEntry {
 		}
 		expectedManagersResponse = append(expectedManagersResponse, managerEntry)
 	}
+
 	return expectedManagersResponse
 }
 
 func setTestServer() *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(ContentType, ApplicationJson)
+		w.Header().Set(ContentType, ApplicationJSON)
+
 		switch r.URL.Path {
 		case "/1":
-			mockJsonResponse, err := json.Marshal(mockFplResponse[0])
+			mockJSONResponse, err := json.Marshal(mockFplResponse[0])
 			if err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, string(mockJsonResponse))
+
+			fmt.Fprintln(w, string(mockJSONResponse))
 		case "/2":
-			mockJsonResponse, err := json.Marshal(mockFplResponse[1])
+			mockJSONResponse, err := json.Marshal(mockFplResponse[1])
 			if err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, string(mockJsonResponse))
+
+			fmt.Fprintln(w, string(mockJSONResponse))
 		}
 	}))
+
 	return ts
 }
 
-func checkValidResponse(testResponse LeagueResponse, expectedManagersResponse []ManagerEntry, t *testing.T) {
+func checkValidResponse(t *testing.T, testResponse LeagueResponse, expectedManagersResponse []ManagerEntry) {
 	for _, leagueEntry := range testResponse.League {
 		switch leagueEntry.ID {
 		case 1:
@@ -147,22 +154,24 @@ func checkValidResponse(testResponse LeagueResponse, expectedManagersResponse []
 func TestFpl404(t *testing.T) {
 	// httptest server to serve up mock json response
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(ContentType, ApplicationJson)
+		w.Header().Set(ContentType, ApplicationJSON)
+
 		switch r.URL.Path {
 		case "/1":
 			w.WriteHeader(http.StatusNotFound)
 		case "/2":
-			mockJsonResponse, err := json.Marshal(mockFplResponse[1])
+			mockJSONResponse, err := json.Marshal(mockFplResponse[1])
 			if err != nil {
 				panic(err)
 			}
-			fmt.Fprintln(w, string(mockJsonResponse))
+
+			fmt.Fprintln(w, string(mockJSONResponse))
 		}
 	}))
 	defer ts.Close()
 
 	// overwrite fplURL to use httptest URL
-	fplURL = ts.URL + "/%v"
+	fplURL = ts.URL + EntryPlaceholder
 
 	// ACT //////////////////////////////////////////////////////////////////////////////////////////////
 	testResponse, err := getData("1, 2")
@@ -186,13 +195,13 @@ func TestFpl404(t *testing.T) {
 func TestFpl5XX(t *testing.T) {
 	// httptest server to serve up mock json response
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(ContentType, ApplicationJson)
+		w.Header().Set(ContentType, ApplicationJSON)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}))
 	defer ts.Close()
 
 	// overwrite fplURL to use httptest URL
-	fplURL = ts.URL + "/%v"
+	fplURL = ts.URL + EntryPlaceholder
 
 	// ACT //////////////////////////////////////////////////////////////////////////////////////////////
 	_, err := getData("1, 2")
@@ -200,9 +209,7 @@ func TestFpl5XX(t *testing.T) {
 	// ASSERT ///////////////////////////////////////////////////////////////////////////////////////////
 	if err == nil {
 		t.Error(`getData server error is nil, want: err not nil`)
-	} else {
-		if !strings.Contains(err.Error(), "not OK, Status:") {
-			t.Errorf(`getData server error (%v), want: "...not OK, Status:..."`, err)
-		}
+	} else if !strings.Contains(err.Error(), "not OK, Status:") {
+		t.Errorf(`getData server error (%v), want: "...not OK, Status:..."`, err)
 	}
 }

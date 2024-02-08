@@ -1,4 +1,4 @@
-// reads a list of comma seperated FPL manager ids from environment variable "managers"
+// reads a list of comma separated FPL manager ids from environment variable "managers"
 // and retrieves the current gameweek scores for the managers.
 package fpl
 
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type FplResponse struct { // fields retrieved from FPL API
+type Response struct { // fields retrieved from FPL API
 	CurrentEvent         int    `json:"current_event"`
 	ID                   int    `json:"id"`
 	ManagerFirstName     string `json:"player_first_name"`
@@ -50,7 +50,7 @@ var fplURL = "https://fantasy.premierleague.com/api/entry/%v/"
 // var fplURL = "http://MIKE-DEV.local:3001/api/entry/%v/"
 // var fplURL = "http://MIKE-ALT.local:3001/api/entry/%v/"
 
-func FplPoints(w http.ResponseWriter, r *http.Request) {
+func Points(w http.ResponseWriter, r *http.Request) {
 	// Set CORS headers for the preflight request
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -58,6 +58,7 @@ func FplPoints(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Max-Age", "3600")
 		w.WriteHeader(http.StatusNoContent)
+
 		return
 	}
 
@@ -70,6 +71,7 @@ func FplPoints(w http.ResponseWriter, r *http.Request) {
 		log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, errMsg)
+
 		return
 	}
 
@@ -78,15 +80,18 @@ func FplPoints(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%+v\n", err)
+
 		return
 	}
 
 	// convert response to json
 	w.Header().Set("Content-Type", "application/json")
+
 	response, err := json.MarshalIndent(leagueResponse, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%+v\n", err)
+
 		return
 	}
 
@@ -95,12 +100,12 @@ func FplPoints(w http.ResponseWriter, r *http.Request) {
 }
 
 func getData(managers string) (LeagueResponse, error) {
-
 	// initialise
 	managerList := strings.Split(managers, ",")
 	league := []ManagerEntry{}                        // slice of manager gameweek entries
 	chManagerEntries := make(chan ManagerEntryResult) // channel to gather manager entries
-	var gameweek int                                  // var to hold the gameweek value
+
+	var gameweek int // var to hold the gameweek value
 
 	// loop thru manager list, fire off goroutines to get entries for each manager, results sent to channels
 	for _, manager := range managerList {
@@ -118,6 +123,7 @@ func getData(managers string) (LeagueResponse, error) {
 		if gameweek == 0 && gameweekResponse > 0 {
 			gameweek = gameweekResponse
 		}
+
 		league = append(league, managerEntries.ManagerEntryValue)
 	}
 
@@ -133,6 +139,7 @@ func getData(managers string) (LeagueResponse, error) {
 
 func getManagerEntries(entry string, chManagerEntries chan<- ManagerEntryResult) {
 	url := fmt.Sprintf(fplURL, entry)
+
 	resp, err := http.Get(url)
 	if err != nil {
 		chManagerEntries <- ManagerEntryResult{Error: err}
@@ -151,6 +158,7 @@ func getManagerEntries(entry string, chManagerEntries chan<- ManagerEntryResult)
 			Gameweek:          -1,
 			ManagerEntryValue: ManagerEntry{Name: fmt.Sprintf("ID %v Not Found (404)", entry)},
 		}
+
 		return
 	}
 
@@ -159,7 +167,7 @@ func getManagerEntries(entry string, chManagerEntries chan<- ManagerEntryResult)
 		return
 	}
 
-	var fplResponse FplResponse
+	var fplResponse Response
 	if err := json.Unmarshal(body, &fplResponse); err != nil {
 		chManagerEntries <- ManagerEntryResult{Error: err}
 		return
