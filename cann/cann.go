@@ -15,14 +15,14 @@ import (
 
 type Points int
 
-// A CannRow contains the points and teams with those points
-type CannRow struct {
+// A Row contains the points and teams with those points
+type Row struct {
 	Points Points
 	Teams  string
 }
 
-// A CannTable contains the table along with max and min points.
-type CannTable struct {
+// A Table contains the table along with max and min points.
+type Table struct {
 	Table     map[Points][]string
 	MaxPoints Points
 	MinPoints Points
@@ -34,8 +34,8 @@ type Team struct {
 	ShortName string `json:"shortName"`
 }
 
-// A Row contains details for a standings table row.
-type Row struct {
+// A TableRow contains details for a standings table row.
+type TableRow struct {
 	Team     Team   `json:"team"`
 	Position int    `json:"position"`
 	Played   int    `json:"playedGames"`
@@ -45,7 +45,7 @@ type Row struct {
 
 // A Standings contains a table of Rows, i.e. teams and points.
 type Standings struct {
-	Table []Row `json:"table"`
+	Table []TableRow `json:"table"`
 }
 
 // DataResponse contains the Standings
@@ -54,25 +54,27 @@ type DataResponse struct {
 }
 
 // fetches the standard table standings, generates and outputs the Cann table
-func GenerateTable(w http.ResponseWriter, req *http.Request) {
-	standings, err := getStandings(w)
+func GenerateTable(w http.ResponseWriter, _ *http.Request) {
+	standings, err := getStandings()
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to read current league standings %s", err)
 		log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, errMsg)
+
 		return
-		
 	}
+
 	canntable := generateCann(standings)
 	setOutput(w, canntable)
 }
 
 // fetch standard table standings
-func getStandings(w http.ResponseWriter) ([]byte, error) {
-	//configure request
+func getStandings() ([]byte, error) {
+	// configure request
 	url := `http://api.football-data.org/v4/competitions/PL/standings`
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	req, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("create standings request failure: %w", err)
 	}
@@ -82,10 +84,12 @@ func getStandings(w http.ResponseWriter) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("environment variable -API_TOKEN- can not be read")
 	}
+
 	req.Header.Add("X-Auth-Token", apiToken)
 
 	// get the response body
 	client := http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("response failure: %w", err)
@@ -105,15 +109,16 @@ func getStandings(w http.ResponseWriter) ([]byte, error) {
 }
 
 // generate Cann table from standard standings table
-func generateCann(standings []byte) CannTable {
+func generateCann(standings []byte) Table {
 	// unmarshall json standings into table of Row types
 	var dataResponse DataResponse
 	if err := json.Unmarshal(standings, &dataResponse); err != nil {
 		log.Fatalln("error unmarshalling json from response standings:", err)
 	}
+
 	standingsTable := dataResponse.Standings[0].Table
-	maxPoints := Points(standingsTable[0].Points)
-	minPoints := Points(standingsTable[len(standingsTable)-1].Points)
+	maxPoints := standingsTable[0].Points
+	minPoints := standingsTable[len(standingsTable)-1].Points
 
 	// TODO refactor to populate slice of CannRows directly
 	// generate an empty Cann table with the correct number of empty rows with points values as keys
@@ -124,20 +129,21 @@ func generateCann(standings []byte) CannTable {
 
 	// loop thru standard table and assign team names and details to their point values in the Cann table
 	const rowFormat = "[%d]%s(%d, %+d)"
+
 	for _, row := range standingsTable {
 		points := row.Points
 		rowData := fmt.Sprintf(rowFormat, row.Position, row.Team.ShortName, row.Played, row.GoalDiff)
 		cannTable[points] = append(cannTable[points], rowData)
 	}
 
-	return CannTable{cannTable, maxPoints, minPoints}
+	return Table{cannTable, maxPoints, minPoints}
 }
 
 // generate output display
-func setOutput(w http.ResponseWriter, cannTable CannTable) {
+func setOutput(w http.ResponseWriter, cannTable Table) {
 	// create slice of Cann rows
 	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
-	tbl := make([]CannRow, 0, rowsCount)
+	tbl := make([]Row, 0, rowsCount)
 
 	// fill the slice of Cann rows in descending sorted order
 	for i := cannTable.MaxPoints; i >= cannTable.MinPoints; i-- {
@@ -145,7 +151,8 @@ func setOutput(w http.ResponseWriter, cannTable CannTable) {
 		for _, team := range cannTable.Table[i] {
 			teams += fmt.Sprintf(" - %v", team)
 		}
-		tbl = append(tbl, CannRow{Points: i, Teams: teams})
+
+		tbl = append(tbl, Row{Points: i, Teams: teams})
 	}
 
 	// generate html output
