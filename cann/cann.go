@@ -15,8 +15,8 @@ import (
 
 type Points int
 
-// A Row contains the points and teams with those points
-type Row struct {
+// A CannRow contains the points and teams with those points
+type CannRow struct {
 	Points Points
 	Teams  string
 }
@@ -143,7 +143,7 @@ func generateCann(standings []byte) Table {
 func setOutput(w http.ResponseWriter, cannTable Table) {
 	// create slice of Cann rows
 	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
-	tbl := make([]Row, 0, rowsCount)
+	tbl := make([]CannRow, 0, rowsCount)
 
 	// fill the slice of Cann rows in descending sorted order
 	for i := cannTable.MaxPoints; i >= cannTable.MinPoints; i-- {
@@ -152,7 +152,7 @@ func setOutput(w http.ResponseWriter, cannTable Table) {
 			teams += fmt.Sprintf(" - %v", team)
 		}
 
-		tbl = append(tbl, Row{Points: i, Teams: teams})
+		tbl = append(tbl, CannRow{Points: i, Teams: teams})
 	}
 
 	// generate html output
