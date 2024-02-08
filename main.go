@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/mick4711/moh/cann"
 	"github.com/mick4711/moh/fpl"
@@ -13,13 +14,19 @@ import (
 
 // main entry point - http server
 func main() {
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Addr:         ":8080",
+	}
+
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/cann", cannHandler)
 	http.HandleFunc("/huxley", huxleyHandler)
 	http.HandleFunc("/fpl", fplHandler)
 
 	log.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(srv.ListenAndServe())
 }
 
 // log request details

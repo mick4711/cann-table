@@ -125,6 +125,8 @@ func setTestServer() *httptest.Server {
 }
 
 func checkValidResponse(t *testing.T, testResponse LeagueResponse, expectedManagersResponse []ManagerEntry) {
+	t.Helper()
+
 	for _, leagueEntry := range testResponse.League {
 		switch leagueEntry.ID {
 		case 1:
