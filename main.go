@@ -19,16 +19,18 @@ const (
 
 // main entry point - http server
 func main() {
+	mux := new(http.ServeMux)
+	mux.Handle("GET /{$}", http.HandlerFunc(homeHandler))
+	mux.Handle("GET /cann", http.HandlerFunc(cannHandler))
+	mux.Handle("GET /huxley", http.HandlerFunc(huxleyHandler))
+	mux.Handle("GET /fpl", http.HandlerFunc(fplHandler))
+
 	srv := &http.Server{
 		ReadTimeout:  ServerReadTimeout,
 		WriteTimeout: ServerWriteTimeout,
 		Addr:         ":8080",
+		Handler:      mux,
 	}
-
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/cann", cannHandler)
-	http.HandleFunc("/huxley", huxleyHandler)
-	http.HandleFunc("/fpl", fplHandler)
 
 	log.Println("Listening on port 8080")
 	log.Fatal(srv.ListenAndServe())
@@ -41,6 +43,7 @@ func logRequest(req *http.Request) {
 	}
 
 	log.Printf("\n============ route = [%s]  ===================\n", req.RequestURI)
+	log.Println("Method:", req.Method)
 	log.Println("User-Agent:", req.Header["User-Agent"])
 	log.Println("Cf-Ipcountry:", req.Header["Cf-Ipcountry"])
 	log.Println("Cf-Connecting-Ip:", req.Header["Cf-Connecting-Ip"])
