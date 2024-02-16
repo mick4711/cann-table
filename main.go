@@ -19,13 +19,13 @@ const (
 
 // main entry point - http server
 func main() {
-	mux := new(http.ServeMux)
-	mux.Handle("GET /{$}", http.HandlerFunc(homeHandler))
-	mux.Handle("GET /cann", http.HandlerFunc(cannHandler))
-	mux.Handle("GET /huxley", http.HandlerFunc(huxleyHandler))
-	mux.Handle("GET /fpl", http.HandlerFunc(fplHandler))
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{$}", homeHandler)
+	mux.HandleFunc("GET /cann", cannHandler)
+	mux.HandleFunc("GET /huxley", huxleyHandler)
+	mux.HandleFunc("GET /fpl", fplHandler)
 
-	srv := &http.Server{
+	srv := http.Server{
 		ReadTimeout:  ServerReadTimeout,
 		WriteTimeout: ServerWriteTimeout,
 		Addr:         ":8080",
