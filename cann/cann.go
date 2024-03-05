@@ -119,13 +119,16 @@ func generateCann(standings []byte) Table {
 	standingsTable := dataResponse.Standings[0].Table
 	maxPoints := standingsTable[0].Points
 	minPoints := standingsTable[len(standingsTable)-1].Points
+	rowCount := maxPoints - minPoints + 1
 
 	// TODO refactor to populate slice of CannRows directly
 	// generate an empty Cann table with the correct number of empty rows with points values as keys
-	cannTable := make(map[Points][]string)
-	for i := maxPoints; i >= minPoints; i-- {
-		cannTable[i] = []string{}
-	}
+	// cannTable := make(map[Points][]string)
+	cannTable := make([]Row, rowCount)
+	fmt.Println("empty cannTable:", cannTable)
+	// for i := maxPoints; i >= minPoints; i-- {
+	// 	cannTable[i] = []string{}
+	// }
 
 	// loop thru standard table and assign team names and details to their point values in the Cann table
 	const rowFormat = "[%d]%s(%d, %+d)"
@@ -143,7 +146,7 @@ func generateCann(standings []byte) Table {
 func setOutput(w http.ResponseWriter, cannTable Table) {
 	// create slice of Cann rows
 	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
-	tbl := make([]Row, 0, rowsCount)
+	tbl := make([]Row, rowsCount)
 
 	// TODO can this countdown loop be done in the template (maybe using Templ)
 	// fill the slice of Cann rows in descending sorted order
@@ -153,8 +156,7 @@ func setOutput(w http.ResponseWriter, cannTable Table) {
 			teams += fmt.Sprintf(" - %v", team)
 		}
 
-		// TODO update instead of append with pre allocated slice
-		tbl = append(tbl, Row{Points: i, Teams: teams})
+		tbl[cannTable.MaxPoints-i] = Row{Points: i, Teams: teams}
 	}
 
 	// generate html output
