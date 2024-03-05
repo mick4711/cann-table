@@ -145,6 +145,7 @@ func setOutput(w http.ResponseWriter, cannTable Table) {
 	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
 	tbl := make([]Row, 0, rowsCount)
 
+	// TODO can this countdown loop be done in the template (maybe using Templ)
 	// fill the slice of Cann rows in descending sorted order
 	for i := cannTable.MaxPoints; i >= cannTable.MinPoints; i-- {
 		teams := ""
@@ -152,6 +153,7 @@ func setOutput(w http.ResponseWriter, cannTable Table) {
 			teams += fmt.Sprintf(" - %v", team)
 		}
 
+		// TODO update instead of append with pre allocated slice
 		tbl = append(tbl, Row{Points: i, Teams: teams})
 	}
 
