@@ -21,13 +21,6 @@ type Row struct {
 	Teams  string
 }
 
-// A Table contains the table along with max and min points.
-type Table struct {
-	Table     map[Points][]string
-	MaxPoints Points
-	MinPoints Points
-}
-
 // A Team contains details for a team.
 type Team struct {
 	ID        int    `json:"id"`
@@ -57,16 +50,21 @@ type DataResponse struct {
 func GenerateTable(w http.ResponseWriter, _ *http.Request) {
 	standings, err := getStandings()
 	if err != nil {
-		errMsg := fmt.Sprintf("Unable to read current league standings %s", err)
-		log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, errMsg)
-
+		returnError(err, w)
 		return
 	}
 
-	canntable := generateCann(standings)
-	setOutput(w, canntable)
+	if err := generateCann(standings, w); err != nil {
+		returnError(err, w)
+		return
+	}
+}
+
+func returnError(err error, w http.ResponseWriter) {
+	errMsg := fmt.Sprintf("Unable to read current league standings %s", err)
+	log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprint(w, errMsg)
 }
 
 // fetch standard table standings
@@ -109,59 +107,37 @@ func getStandings() ([]byte, error) {
 }
 
 // generate Cann table from standard standings table
-func generateCann(standings []byte) Table {
-	// unmarshall json standings into table of Row types
+func generateCann(standings []byte, w http.ResponseWriter) error {
+	// unmarshall json standings into DataResponse slice of TableRows
 	var dataResponse DataResponse
 	if err := json.Unmarshal(standings, &dataResponse); err != nil {
-		log.Fatalln("error unmarshalling json from response standings:", err)
+		return fmt.Errorf("error unmarshalling json from response standings:%w", err)
 	}
 
 	standingsTable := dataResponse.Standings[0].Table
 	maxPoints := standingsTable[0].Points
 	minPoints := standingsTable[len(standingsTable)-1].Points
-	rowCount := maxPoints - minPoints + 1
 
-	// TODO refactor to populate slice of CannRows directly
-	// generate an empty Cann table with the correct number of empty rows with points values as keys
-	// cannTable := make(map[Points][]string)
-	cannTable := make([]Row, rowCount)
-	fmt.Println("empty cannTable:", cannTable)
-	// for i := maxPoints; i >= minPoints; i-- {
-	// 	cannTable[i] = []string{}
-	// }
+	// generate an empty Cann table with the correct number of rows, set points values
+	cannTable := make([]Row, maxPoints-minPoints+1)
+	for i := range cannTable {
+		cannTable[i].Points = maxPoints - Points(i)
+	}
 
-	// loop thru standard table and assign team names and details to their point values in the Cann table
 	const rowFormat = "[%d]%s(%d, %+d)"
 
+	// loop thru standard table and assign team names and details to their point values in the Cann table
 	for _, row := range standingsTable {
-		points := row.Points
+		index := maxPoints - row.Points
 		rowData := fmt.Sprintf(rowFormat, row.Position, row.Team.ShortName, row.Played, row.GoalDiff)
-		cannTable[points] = append(cannTable[points], rowData)
+		cannTable[index].Teams += fmt.Sprintf(" - %v", rowData)
 	}
 
-	return Table{cannTable, maxPoints, minPoints}
-}
-
-// generate output display
-func setOutput(w http.ResponseWriter, cannTable Table) {
-	// create slice of Cann rows
-	rowsCount := cannTable.MaxPoints - cannTable.MinPoints + 1
-	tbl := make([]Row, rowsCount)
-
-	// TODO can this countdown loop be done in the template (maybe using Templ)
-	// fill the slice of Cann rows in descending sorted order
-	for i := cannTable.MaxPoints; i >= cannTable.MinPoints; i-- {
-		teams := ""
-		for _, team := range cannTable.Table[i] {
-			teams += fmt.Sprintf(" - %v", team)
-		}
-
-		tbl[cannTable.MaxPoints-i] = Row{Points: i, Teams: teams}
-	}
-
-	// generate html output
+	// write cann template to response
 	cannTemplate := template.Must(template.ParseFiles("cann/CannTemplate.html"))
-	if err := cannTemplate.Execute(w, tbl); err != nil {
-		log.Fatal(err)
+	if err := cannTemplate.Execute(w, cannTable); err != nil {
+		return fmt.Errorf("error executing cannTemplate:%w", err)
 	}
+
+	return nil
 }
