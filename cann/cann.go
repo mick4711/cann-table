@@ -54,7 +54,13 @@ func GenerateTable(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	if err := generateCann(standings, w); err != nil {
+	cannTable, err := generateCann(standings)
+	if err != nil {
+		returnError(err, w)
+		return
+	}
+
+	if err := writeResponse(w, cannTable); err != nil {
 		returnError(err, w)
 		return
 	}
@@ -107,11 +113,11 @@ func getStandings() ([]byte, error) {
 }
 
 // generate Cann table from standard standings table
-func generateCann(standings []byte, w http.ResponseWriter) error {
+func generateCann(standings []byte) ([]Row, error) {
 	// unmarshall json standings into DataResponse slice of TableRows
 	var dataResponse DataResponse
 	if err := json.Unmarshal(standings, &dataResponse); err != nil {
-		return fmt.Errorf("error unmarshalling json from response standings:%w", err)
+		return nil, fmt.Errorf("error unmarshalling json from response standings:%w", err)
 	}
 
 	standingsTable := dataResponse.Standings[0].Table
@@ -133,10 +139,14 @@ func generateCann(standings []byte, w http.ResponseWriter) error {
 		cannTable[index].Teams += fmt.Sprintf(" - %v", rowData)
 	}
 
-	// write cann template to response
+	return cannTable, nil
+}
+
+// write Cann table to response
+func writeResponse(w http.ResponseWriter, cannTable []Row) error {
 	cannTemplate := template.Must(template.ParseFiles("cann/CannTemplate.html"))
 	if err := cannTemplate.Execute(w, cannTable); err != nil {
-		return fmt.Errorf("error executing cannTemplate:%w", err)
+		return fmt.Errorf("error executing cannTemplate: %w", err)
 	}
 
 	return nil
