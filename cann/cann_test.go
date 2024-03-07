@@ -24,8 +24,8 @@ func TestGenerateCann(t *testing.T) {
 	}
 
 	tests := []struct {
-		input []byte
-		want  []Row
+		input    []byte
+		want     []Row
 		hasError bool
 	}{
 		{validStandings, validCannTable, false},

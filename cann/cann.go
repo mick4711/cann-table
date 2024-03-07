@@ -66,11 +66,11 @@ func GenerateTable(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
+// TODO display empty page template with error message
 func returnError(err error, w http.ResponseWriter) {
-	errMsg := fmt.Sprintf("Unable to read current league standings %s", err)
-	log.Printf("\n*********** FATAL ERROR *********************** [%s]  **************\n", errMsg)
+	log.Printf("\n*********** FATAL ERROR ********** [%s]\n", err)
 	w.WriteHeader(http.StatusInternalServerError)
-	fmt.Fprint(w, errMsg)
+	fmt.Fprintln(w, err)
 }
 
 // fetch standard table standings
@@ -80,7 +80,7 @@ func getStandings() ([]byte, error) {
 
 	req, err := http.NewRequest(http.MethodGet, url, http.NoBody)
 	if err != nil {
-		return nil, fmt.Errorf("create standings request failure: %w", err)
+		return nil, fmt.Errorf("error creating standings request: %w", err)
 	}
 
 	// add API token to header
@@ -96,17 +96,17 @@ func getStandings() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("response failure: %w", err)
+		return nil, fmt.Errorf("error requesting standings: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("response status not OK: %v", resp.StatusCode)
+		return nil, fmt.Errorf("standings response status not OK: %v", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read response: %w", err)
+		return nil, fmt.Errorf("error reading standings response: %w", err)
 	}
 
 	return body, nil
@@ -117,7 +117,7 @@ func generateCann(standings []byte) ([]Row, error) {
 	// unmarshall json standings into DataResponse slice of TableRows
 	var dataResponse DataResponse
 	if err := json.Unmarshal(standings, &dataResponse); err != nil {
-		return nil, fmt.Errorf("error unmarshalling json from response standings:%w", err)
+		return nil, fmt.Errorf("error unmarshalling json from standings response:%w", err)
 	}
 
 	standingsTable := dataResponse.Standings[0].Table
