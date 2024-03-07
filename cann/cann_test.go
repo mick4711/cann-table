@@ -26,20 +26,20 @@ func TestGenerateCann(t *testing.T) {
 	tests := []struct {
 		input []byte
 		want  []Row
-		err   error
+		hasError bool
 	}{
-		{validStandings, validCannTable, nil},
-		// TODO custom error {[]byte{}, []Row{}, nil},
+		{validStandings, validCannTable, false},
+		{[]byte{}, []Row(nil), true},
 	}
 
 	for _, test := range tests {
 		got, err := generateCann(test.input)
-		if err != test.err {
-			t.Errorf("generateCann(%v) err:%v, want:%v", string(test.input), err, test.err)
+		if hasError := err != nil; hasError != test.hasError {
+			t.Errorf("generateCann()\n got err:%v, \nwant hasError:%v", err, test.hasError)
 		}
 
 		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("generateCann()\ngot :%v, \nwant:%v", got, test.want)
+			t.Errorf("generateCann()\ngot :%#v, \nwant:%#v", got, test.want)
 		}
 	}
 }
