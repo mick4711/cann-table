@@ -16,7 +16,7 @@ linters-settings:
     excludes:
       - G107 # Url provided to HTTP request as taint input
   govet:
-    check-shadowing: true
+    shadow: true
   nolintlint:
     require-explanation: true
     require-specific: true
