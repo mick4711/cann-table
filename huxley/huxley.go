@@ -88,24 +88,15 @@ func DogStats(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-// TODO work on edge cases
 func getAge(dob, doi time.Time) Age {
 	y, m, d := doi.Date()
-
 	ageDays := doi.Sub(dob).Hours() / hoursInDay
 	ageWeeks := ageDays / daysInWeek
-	ageYears := y - dob.Year()
-	ageMonths := float64(int(m) - int(dob.Month()) + ageYears*monthsInYear)
-	monthDays := d
+	ageYears := float64(y - dob.Year())
 
-	if d < dob.Day() {
-		ageMonths--
-	} else {
-		monthDays -= d
-	}
+	ageMonths := getAgeMonths(m, d, dob, ageYears)
 
-	monthFraction := (math.Round(float64(monthDays) / daysInWeek)) / weeksInMonth
-	ageMonths += monthFraction
+	ageYears = getAgeYearsPartial(ageMonths, ageYears)
 
 	return Age{
 		DateOfInterest: doi.Format("Mon 02-Jan-2006 15:04:05"), //
@@ -114,4 +105,48 @@ func getAge(dob, doi time.Time) Age {
 		Months:         ageMonths,
 		Years:          float64(ageYears),
 	}
+}
+
+// calculate age in months to nearest quarter month
+func getAgeMonths(m time.Month, d int, dob time.Time, ageYears float64) float64 {
+	var partialMonthDays int
+
+	ageMonths := float64(int(m)-int(dob.Month())) + ageYears*monthsInYear
+	daysInBirthMonth := daysInMonth(dob.Month(), dob.Year())
+
+	if d < dob.Day() {
+		ageMonths--
+		partialMonthDays = d + daysInBirthMonth - dob.Day()
+	} else {
+		partialMonthDays = d - dob.Day()
+	}
+
+	monthFraction := (math.Round(float64(partialMonthDays) / daysInWeek)) / weeksInMonth
+	ageMonths += monthFraction
+
+	return ageMonths
+}
+
+// trick to get the number of days in a month. Add 1 month to day zero (the day before the 1st of the month)
+func daysInMonth(m time.Month, year int) int {
+	return time.Date(year, m+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+// get the fractional age in years to the nearest quarter
+func getAgeYearsPartial(ageMonths, ageYears float64) float64 {
+	yr, frac := math.Modf(ageMonths / monthsInYear)
+
+	//nolint:gomnd //readability
+	switch {
+	case frac < 0.25:
+		ageYears = yr
+	case frac < 0.5:
+		ageYears = yr + 0.25
+	case frac < 0.75:
+		ageYears = yr + 0.5
+	case frac < 1:
+		ageYears = yr + 0.75
+	}
+
+	return ageYears
 }
