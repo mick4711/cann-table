@@ -21,28 +21,24 @@ var templ = template.Must(template.New("webpage").Parse(`
 	</head>
 	<body style="font-size: xxx-large;">
 		<h1>{{.Name}}'s Age</h1>
-		<h3>{{.DateOfInterest}}</h3>
+		<h3>{{.Age.DateOfInterest}}</h3>
 		<ul>
 			<li>Breed: {{.Breed}}</li>
 			<li>Born: {{.DateOfBirth}}</li>
-			<li>Years: {{.AgeYears}}</li>
-			<li>Months: {{.AgeMonths}}</li>
-			<li>Weeks: {{.AgeWeeks}}</li>
-			<li>Days: {{.AgeDays}}</li>
+			<li>Years: {{.Age.Years}}</li>
+			<li>Months: {{.Age.Months}}</li>
+			<li>Weeks: {{.Age.Weeks}}</li>
+			<li>Days: {{.Age.Days}}</li>
 		</ul>
 	</body>
 </html>
 `))
 
 type DogStat struct {
-	Name           string
-	DateOfBirth    string
-	Breed          string
-	DateOfInterest string
-	AgeDays        int
-	AgeWeeks       int
-	AgeMonths      float64
-	AgeYears       float64
+	Name        string
+	DateOfBirth string
+	Breed       string
+	Age         Age
 }
 
 type Age struct {
@@ -72,19 +68,17 @@ func DogStats(w http.ResponseWriter, _ *http.Request) {
 	age := getAge(dob, time.Now().In(loc))
 
 	result := DogStat{
-		Name:           "Huxley",
-		DateOfBirth:    dob.Format("2 January 2006"),
-		Breed:          "Golden Retriever",
-		DateOfInterest: age.DateOfInterest,
-		AgeDays:        age.Days,
-		AgeWeeks:       age.Weeks,
-		AgeMonths:      age.Months,
-		AgeYears:       age.Years,
+		Name:        "Huxley",
+		DateOfBirth: dob.Format("2 January 2006"),
+		Breed:       "Golden Retriever",
+		Age:         age,
 	}
 
 	// write result to ResponseWriter using html template
 	if err := templ.Execute(w, result); err != nil {
-		log.Fatal(err)
+		// TODO send back an error page, test with invalid field in template
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
