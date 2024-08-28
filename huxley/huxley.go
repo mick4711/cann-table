@@ -25,6 +25,7 @@ var templ = template.Must(template.New("webpage").Parse(`
 		<ul>
 			<li>Breed: {{.Breed}}</li>
 			<li>Born: {{.DateOfBirth}}</li>
+			<li>Years: {{.AgeYears}}</li>
 			<li>Months: {{.AgeMonths}}</li>
 			<li>Weeks: {{.AgeWeeks}}</li>
 			<li>Days: {{.AgeDays}}</li>
@@ -41,6 +42,7 @@ type DogStat struct {
 	AgeDays        int
 	AgeWeeks       int
 	AgeMonths      float64
+	AgeYears       float64
 }
 
 type Age struct {
@@ -48,6 +50,7 @@ type Age struct {
 	Days           int
 	Weeks          int
 	Months         float64
+	Years          float64
 }
 
 const (
@@ -76,6 +79,7 @@ func DogStats(w http.ResponseWriter, _ *http.Request) {
 		AgeDays:        age.Days,
 		AgeWeeks:       age.Weeks,
 		AgeMonths:      age.Months,
+		AgeYears:       age.Years,
 	}
 
 	// write result to ResponseWriter using html template
@@ -108,5 +112,6 @@ func getAge(dob, doi time.Time) Age {
 		Days:           int(math.Round(ageDays)),
 		Weeks:          int(math.Round(ageWeeks)),
 		Months:         ageMonths,
+		Years:          float64(ageYears),
 	}
 }
