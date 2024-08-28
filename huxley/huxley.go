@@ -73,7 +73,7 @@ func DogStats(w http.ResponseWriter, _ *http.Request) {
 
 	result := DogStat{
 		Name:           "Huxley",
-		DateOfBirth:    "28 July 2022",
+		DateOfBirth:    dob.Format("2 January 2006"),
 		Breed:          "Golden Retriever",
 		DateOfInterest: age.DateOfInterest,
 		AgeDays:        age.Days,
@@ -94,12 +94,12 @@ func getAge(dob, doi time.Time) Age {
 	ageWeeks := ageDays / daysInWeek
 	ageYears := float64(y - dob.Year())
 
-	ageMonths := getAgeMonths(m, d, dob, ageYears)
+	ageMonths := getAgeMonthsFractional(m, d, dob, ageYears)
 
-	ageYears = getAgeYearsPartial(ageMonths, ageYears)
+	ageYears = getAgeYearsFractional(ageMonths, ageYears)
 
 	return Age{
-		DateOfInterest: doi.Format("Mon 02-Jan-2006 15:04:05"), //
+		DateOfInterest: doi.Format(time.RFC1123),
 		Days:           int(math.Round(ageDays)),
 		Weeks:          int(math.Round(ageWeeks)),
 		Months:         ageMonths,
@@ -107,8 +107,8 @@ func getAge(dob, doi time.Time) Age {
 	}
 }
 
-// calculate age in months to nearest quarter month
-func getAgeMonths(m time.Month, d int, dob time.Time, ageYears float64) float64 {
+// calculate fractional age in months to nearest quarter month
+func getAgeMonthsFractional(m time.Month, d int, dob time.Time, ageYears float64) float64 {
 	var partialMonthDays int
 
 	ageMonths := float64(int(m)-int(dob.Month())) + ageYears*monthsInYear
@@ -133,10 +133,10 @@ func daysInMonth(m time.Month, year int) int {
 }
 
 // get the fractional age in years to the nearest quarter
-func getAgeYearsPartial(ageMonths, ageYears float64) float64 {
+func getAgeYearsFractional(ageMonths, ageYears float64) float64 {
 	yr, frac := math.Modf(ageMonths / monthsInYear)
 
-	//nolint:gomnd //readability
+	//nolint:gomnd //readability, values easier to read than named constants
 	switch {
 	case frac < 0.25:
 		ageYears = yr
